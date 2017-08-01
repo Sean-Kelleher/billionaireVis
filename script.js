@@ -3,7 +3,7 @@ var height = 200;
 var colCounter = 0;
 
 var industriesValues = {}; //Biggest is Consumer : 1756
-
+var billionaires = [];
 var vis = d3.select('#charts')
 		.append('svg')
 		.attr('width',width * 5)
@@ -11,15 +11,30 @@ var vis = d3.select('#charts')
 
 var scale = d3.scaleLinear().domain([0, 1800]).range([0,100]);
 //industry, its billionaires, who they are, the total
-//Each circle has a diameter of 200, (Ring for each billionaire?)
-//circle, pie, bar, line, 
+
 d3.json('billionaires.json',function(error, data){
 	if(error)
 		throw error;
+
 	//Show the list of billionaires
-	function viewBils(){
-		//append somethin i guess I don't know I'll figure this out later
+	function viewBils(d){
+		var industry = d.key;
+		var people = billionaires.filter(function(elem){return elem.industry == industry});
+		var vis = d3.select("#viewBil").append('svg').attr('width','1000').attr('height','400');
+		vis.selectAll('text').data(people)
+			.enter()
+			.append('text')
+			.text(function(d){return d.name + " " + d.wealth})
+			.attr('font-size','10')
+			.attr('y', function(d,i){return i * 10})
 	}
+	function fillBils(){
+		data.forEach(function(elem){
+			billionaires.push({industry: elem.industry, name: elem.name, wealth: elem.billions});
+		})
+	}
+	fillBils();
+	console.log(billionaires)
 
 	data.forEach(function(elem){
 		if(!Object.keys(industriesValues).includes(elem.industry))
@@ -57,10 +72,15 @@ d3.json('billionaires.json',function(error, data){
 			else
 				ret = height/2;
 			return ret;
-		});
-		colCounter = 0;
+		})
+		.attr('class','circleGraphs')
+		.on('click', viewBils);
+
+	colCounter = 0;
 	graphs.append('text')
-		.text(function(d){return d.key})
+		.text(function(d){
+			return d.key;
+		})
 		.attr('x', function(d,i){
 			var ret = 0;
 			if(i > 4)
@@ -80,5 +100,41 @@ d3.json('billionaires.json',function(error, data){
 				ret = height/2;
 			return ret;
 		})
+		.attr('text-anchor','middle')
+		.attr('fill','red');
+	colCounter = 0;
+	graphs.append('text')
+		.text(function(d){
+			var wealth = Math.round(d.value);
+			if(wealth > 1000)
+			{
+				wealth = (wealth / 1000).toFixed(2);
+				wealth = wealth + " Trillion"
+			}
+			else
+				wealth = wealth + " Billion";
+			return wealth
+		})
+		.attr('font-size',11)
+		.attr('x', function(d,i){
+			var ret = 0;
+			if(i > 4)
+			{
+				ret = colCounter * width + width/2;
+				colCounter++;
+			}
+			else
+				ret = i * width + width/2;			
+			return ret;
+		})
+		.attr('y', function(d, i){
+			var ret = 0;
+			if(i > 4)
+				ret = 13 + height + height/2;
+			else
+				ret = 13 + height/2;
+			return ret;
+		})
+		.attr('text-anchor','middle')
 		.attr('fill','red');
 });
