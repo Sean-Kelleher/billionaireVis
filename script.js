@@ -29,8 +29,10 @@ d3.json('billionaires.json',function(error, data){
 		bilView.selectAll('text').data(people)
 			.enter()
 			.append('text')
+			.append('tspan')
 			.text(function(d){return d.name + " " + d.wealth.toFixed(2);})
 			.attr('font-size','11')
+			.attr('textLength', '200')
 			.attr('y', function(d,i){
 				var ret = 8 + rowCounter * 11
 				if(i % 20 == 0 && i != 0)
@@ -50,21 +52,19 @@ d3.json('billionaires.json',function(error, data){
 	function removeBils(){
 		bilView.remove();
 	}
-	function fillBils(){
-		data.forEach(function(elem){
-			billionaires.push({industry: elem.industry, name: elem.name, wealth: elem.billions});
-		})
-	}
-	fillBils();
-
+	
+	data.forEach(function(elem){
+		billionaires.push({industry: elem.industry, name: elem.name, wealth: elem.billions});
+	})
+	
 	data.forEach(function(elem){
 		if(!Object.keys(industriesValues).includes(elem.industry))
 			industriesValues[elem.industry] = 0;
 	})
+
 	data.forEach(function(elem){
 		industriesValues[elem.industry] += elem.billions;
 	});
-	console.log(industriesValues)
 	
 	var sorted = d3.entries(industriesValues).sort(function(a,b){return b.value - a.value})
 	//Reduce to top 10
@@ -147,7 +147,7 @@ d3.json('billionaires.json',function(error, data){
 				colCounter++;
 			}
 			else
-				ret = i * width + width/2;			
+				ret = i * width + width/2;
 			return ret;
 		})
 		.attr('y', function(d, i){
